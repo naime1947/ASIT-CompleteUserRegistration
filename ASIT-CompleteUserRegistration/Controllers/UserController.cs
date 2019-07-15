@@ -1,17 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using ASIT_CompleteUserRegistration.Repository;
+using ASIT_CompleteUserRegistration.ViewModels;
+using Microsoft.Ajax.Utilities;
+using Models.ViewModels;
 
 namespace ASIT_CompleteUserRegistration.Controllers
 {
     public class UserController : Controller
     {
         // GET: User
-        public ActionResult Index()
+        public ActionResult Index(string searchString)
         {
-            return View();
+            var userRepo = new UserRepository();
+            List<UserDisplayViewModel> users = new List<UserDisplayViewModel>();
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                users = userRepo.SearchUsersByName(searchString);
+            }
+            else
+            {
+                users = userRepo.GetUsers();
+            }
+            
+            return View(users);
         }
 
         // GET: User/Details/5
@@ -23,51 +39,98 @@ namespace ASIT_CompleteUserRegistration.Controllers
         // GET: User/Registration
         public ActionResult Registration()
         {
-            return View();
+            var userRepo = new UserRepository();
+            var regiUser = userRepo.Registration();
+            return View(regiUser);
         }
+
+        
 
         // POST: User/Registration
         [HttpPost]
-        public ActionResult Registration(FormCollection collection)
+        public ActionResult Registration(UserEditViewModel editUser)
         {
             try
             {
-                // TODO: Add insert logic here
+                if (ModelState.IsValid)
+                {
+                    var repo = new UserRepository();
+                    bool saved = repo.SaveUser(editUser);
+                    if (saved)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                }
 
-                return RedirectToAction("Index");
+                throw new ApplicationException("Invalid model");
             }
-            catch
+            catch(ApplicationException ex)
             {
-                return View();
+                throw ex;
             }
         }
+
+        [HttpGet]
+        public ActionResult GetDistricts(string divisionId)
+        {
+            if (!string.IsNullOrWhiteSpace(divisionId))
+            {
+                var disRepo = new DistrictRepository();
+                IEnumerable<SelectListItem> districts = disRepo.GetDistricts(int.Parse(divisionId));
+
+                return Json(districts, JsonRequestBehavior.AllowGet);
+            }
+
+            return null;
+        }
+
 
         // GET: User/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var repo = new UserRepository();
+            var user = repo.GetUser(id);
+            return View(user);
+            
         }
 
         // POST: User/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        public ActionResult Edit(int id, UserEditViewModel editUser)
         {
             try
             {
-                // TODO: Add update logic here
+                if (ModelState.IsValid)
+                {
+                    var repo = new UserRepository();
+                    bool saved = repo.UpdateUser(id,editUser);
+                    if (saved)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                }
 
-                return RedirectToAction("Index");
+                throw new ApplicationException("Invalid model");
             }
-            catch
+            catch (ApplicationException ex)
             {
-                return View();
+                throw ex;
             }
         }
 
         // GET: User/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            try
+            {
+                var repo = new UserRepository();
+                repo.DeleteUser(id);
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         // POST: User/Delete/5
@@ -76,14 +139,16 @@ namespace ASIT_CompleteUserRegistration.Controllers
         {
             try
             {
-                // TODO: Add delete logic here
-
+                var repo = new UserRepository();
+                repo.DeleteUser(id);
                 return RedirectToAction("Index");
             }
             catch
             {
-                return View();
+                return RedirectToAction("Index");
             }
         }
-    }
+
+        
+}
 }

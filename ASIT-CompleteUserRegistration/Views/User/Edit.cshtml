@@ -1,10 +1,11 @@
 ﻿@model Models.ViewModels.UserEditViewModel
 
 @{
-    ViewBag.Title = "Registration";
+    ViewBag.Title = "Edit User";
 }
 
-<h2>Registration</h2>
+<h2>Edit</h2>
+
 
 @using (Html.BeginForm())
 {
@@ -109,7 +110,6 @@
             @Html.LabelFor(model => model.DoB, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.DoB, new { htmlAttributes = new { @class = "form-control", id = "datepicker" } })
-                @Html.ValidationMessageFor(model => model.DoB, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -153,7 +153,7 @@
             }
         });
     </script>
-    
+
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
